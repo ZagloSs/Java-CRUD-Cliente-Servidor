@@ -10,19 +10,26 @@ public class MainClient {
 
 	public static void main(String[] args) {
 		try {
-			Socket socket = new Socket("192.168.128.240", 6565);
+			Socket socket = new Socket("localhost", 6565);
 			DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 			DataInputStream dis = new DataInputStream(socket.getInputStream());
 			Scanner sc = new Scanner(System.in);
 
-			System.out.print("Introduce el mensaje para el server: ");
-			dos.writeUTF(sc.nextLine());
-
-			System.out.println("Respuesta: " + dis.readUTF());
-
-			sc.close();
-			dos.close();
-			socket.close();
+			System.out.println(dis.readUTF());
+			
+			//Asumo que el cliente no va a introducir no va a introducir algo que no sea un entero
+			int elect = sc.nextInt();
+			dos.write(elect);
+			System.out.println(dis.readUTF());
+			
+			
+			
+			if(elect == 5) {
+				sc.close();
+				dos.close();
+				socket.close();
+			}
+			
 			
 			
 		} catch (IOException e) {
