@@ -36,19 +36,11 @@ public class ClientsManager {
 						DataInputStream dis = new DataInputStream(socketCliente.getInputStream());
 						DataOutputStream dos = new DataOutputStream(socketCliente.getOutputStream());
 						
-						String welcome = "Welcome to clients manager, what would you like to do?\n"
-								+ "1. INSERT A NEW CLIENT\n"
-								+ "2. SEE ALL CLIENTS\n"
-								+ "3. UPDATE A CLIENT\n"
-								+ "4. DELETE A CLIENT\n";
-						
-						dos.writeUTF(welcome);
-						
 						eleccion = dis.read();
-
 						switch(eleccion) {
 						case 1:
 							dos.writeUTF("You selected inserting an user");
+							System.out.println(dis.readUTF());
 							break;
 						case 2:
 							dos.writeUTF(getAllClients(connection));
@@ -65,6 +57,7 @@ public class ClientsManager {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				
 				connection.close();
 			}
 		} catch (SQLException e) {
@@ -93,5 +86,7 @@ public class ClientsManager {
 		return allClients;
 	
 	}
+	
+	
 
 }
