@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -27,7 +29,7 @@ public class ClientsManager {
 			}else {
 				System.out.println("Connected");
 				try {
-					ServerSocket serverSocket = new ServerSocket(6565);
+					ServerSocket serverSocket = new ServerSocket(6564);
 					int eleccion;
 
 					do {
@@ -39,8 +41,9 @@ public class ClientsManager {
 						eleccion = dis.read();
 						switch(eleccion) {
 						case 1:
-							dos.writeUTF("You selected inserting an user");
-							System.out.println(dis.readUTF());
+							String data = dis.readUTF();
+							dos.writeUTF(insertNewClient(connection, data));
+							
 							break;
 						case 2:
 							dos.writeUTF(getAllClients(connection));
@@ -78,13 +81,39 @@ public class ClientsManager {
 				+ " " + res.getString("apellido2") + " EDAD: " + res.getString("edad") + " AÑO DE NACIMIENTO: " + res.getString("nacimiento") + "\n";
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			allClients = "null";
 		}
 		
 		return allClients;
 	
+	}
+	
+	private static String insertNewClient(Connection con, String data) {
+		String[] dataSplit = data.split(",");
+		String sql = "INSERT INTO cliente (nombre, apellido1, apellido2, edad, nacimiento) VALUES(?,?,?,?,?)";
+		Date defDate = new Date(999945843);
+		try {
+			PreparedStatement stmnt = con.prepareStatement(sql);
+			stmnt.setString(1, dataSplit[0]);
+			stmnt.setString(2, dataSplit[1]);
+			stmnt.setString(3, dataSplit[2]);
+			stmnt.setInt(4, Integer.parseInt(dataSplit[3]));
+			stmnt.setDate(5, defDate);
+			int rows = stmnt.executeUpdate();
+			
+			if(rows > 0) {
+				return "A new user has been inserted";
+			}else {
+				return "A problem occurred while trying to insert new user";
+			}
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return "A problem occurred while trying to insert new user";
+		}
 	}
 	
 	

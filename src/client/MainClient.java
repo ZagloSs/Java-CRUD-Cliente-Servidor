@@ -10,7 +10,7 @@ public class MainClient {
 
 	public static void main(String[] args) {
 		try {
-			Socket socket = new Socket("localhost", 6565);
+			Socket socket = new Socket("localhost", 6564);
 			DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 			DataInputStream dis = new DataInputStream(socket.getInputStream());
 			Scanner sc = new Scanner(System.in);
@@ -35,6 +35,7 @@ public class MainClient {
 				int age = sc.nextInt();
 				String toServer = cName + "," + age;
 				dos.writeUTF(toServer);
+				System.out.println(dis.readUTF());
 				break;
 			case 2: 
 				System.out.println(dis.readUTF());
