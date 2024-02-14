@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,8 +27,9 @@ public class ClientsManager {
 				System.out.println("An error occurred while connection to db");
 			}else {
 				System.out.println("Connected");
-				try {
-					ServerSocket serverSocket = new ServerSocket(6564);
+				try (ServerSocket serverSocket = new ServerSocket(6562)){
+					
+					
 					int eleccion;
 
 					do {
@@ -47,6 +47,15 @@ public class ClientsManager {
 							break;
 						case 2:
 							dos.writeUTF(getAllClients(connection));
+							break;
+						case 3:
+							int userId = dis.read();
+							UpdateClient(dos,dis,connection, userId);
+							break;
+						case 4:
+							int idToDelete = dis.read();
+							dos.writeUTF(DeleteClient(connection, idToDelete));
+							
 							
 						}
 			
@@ -93,14 +102,13 @@ public class ClientsManager {
 	private static String insertNewClient(Connection con, String data) {
 		String[] dataSplit = data.split(",");
 		String sql = "INSERT INTO cliente (nombre, apellido1, apellido2, edad, nacimiento) VALUES(?,?,?,?,?)";
-		Date defDate = new Date(999945843);
 		try {
 			PreparedStatement stmnt = con.prepareStatement(sql);
 			stmnt.setString(1, dataSplit[0]);
 			stmnt.setString(2, dataSplit[1]);
 			stmnt.setString(3, dataSplit[2]);
 			stmnt.setInt(4, Integer.parseInt(dataSplit[3]));
-			stmnt.setDate(5, defDate);
+			stmnt.setString(5, dataSplit[4]);
 			int rows = stmnt.executeUpdate();
 			
 			if(rows > 0) {
@@ -114,6 +122,133 @@ public class ClientsManager {
 			e.printStackTrace();
 			return "A problem occurred while trying to insert new user";
 		}
+	}
+	
+	private static void UpdateClient(DataOutputStream dos,DataInputStream dis, Connection con, int id) {
+		try {
+			if(CheckClientExistance(con, id)) {
+				int electChange = dis.read();
+				String newValue = dis.readUTF();
+				switch(electChange){
+					case 1:
+						String name = "UPDATE cliente SET nombre = ? WHERE id = ?";
+						PreparedStatement stmntName = con.prepareStatement(name);
+						stmntName.setString(1, newValue);
+						stmntName.setInt(2, id);
+						int rowsName = stmntName.executeUpdate();
+						
+						if(rowsName > 0) {
+							dos.writeUTF("Update succesful");
+						}else {
+							dos.writeUTF("An error occurred while updating");
+						}
+						break;
+					case 2:
+						String sName1 = "UPDATE cliente SET apellido1 = ? WHERE id = ?";
+						PreparedStatement stmntSName1 = con.prepareStatement(sName1);
+						stmntSName1.setString(1, newValue);
+						stmntSName1.setInt(2, id);
+						int rowsSName1 = stmntSName1.executeUpdate();
+					
+						if(rowsSName1 > 0) {
+							dos.writeUTF("Update succesful");
+						}else {
+							dos.writeUTF("An error occurred while updating");
+						}
+						break;
+					case 3:
+						String sName2 = "UPDATE cliente SET apellido2 = ? WHERE id = ?";
+						PreparedStatement stmntSName2 = con.prepareStatement(sName2);
+						stmntSName2.setString(1, newValue);
+						stmntSName2.setInt(2, id);
+						int rowsSName2 = stmntSName2.executeUpdate();
+					
+						if(rowsSName2 > 0) {
+							dos.writeUTF("Update succesful");
+						}else {
+							dos.writeUTF("An error occurred while updating");
+						}
+						break;
+					case 4:
+						String age = "UPDATE cliente SET edad = ? WHERE id = ?";
+						PreparedStatement stmntAge = con.prepareStatement(age);
+						stmntAge.setInt(1, Integer.valueOf(newValue));
+						stmntAge.setInt(2, id);
+						int rowsAge = stmntAge.executeUpdate();
+					
+						if(rowsAge > 0) {
+							dos.writeUTF("Update succesful");
+						}else {
+							dos.writeUTF("An error occurred while updating");
+						}
+						break;
+					case 5:
+						String date = "UPDATE cliente SET nacimiento = ? WHERE id = ?";
+						PreparedStatement stmntDate= con.prepareStatement(date);
+						stmntDate.setString(1, newValue);
+						stmntDate.setInt(2, id);
+						int rowsDate= stmntDate.executeUpdate();
+					
+						if(rowsDate > 0) {
+							dos.writeUTF("Update succesful");
+						}else {
+							dos.writeUTF("An error occurred while updating");
+						}
+						break;
+				}
+			}else {
+					
+					dos.writeUTF("ntf");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private static String DeleteClient(Connection con, int id) {
+		try {
+			String sql = "DELETE FROM cliente WHERE id = ?";
+			PreparedStatement stmntDel = con.prepareStatement(sql);
+			stmntDel.setInt(1, id);
+			Boolean success = stmntDel.execute();
+			
+			if(!success) {
+				return "Succesfully deleted";
+				
+			}else {
+				return "There was an error while deleting";
+			}
+			
+		} catch (SQLException e) {
+			return "There was an e deleting";
+		}
+		
+		
+		 
+			
+	}
+	
+	private static boolean CheckClientExistance(Connection con, int id) {
+		String sql = "SELECT id FROM cliente WHERE id = ?";
+		try {
+			PreparedStatement stmnt = con.prepareStatement(sql);
+			stmnt.setInt(1, id);
+			
+			ResultSet res = stmnt.executeQuery();
+			if(res.next()) {
+				return true;
+			}else {
+				return false;
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
 	}
 	
 	
