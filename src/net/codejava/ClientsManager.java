@@ -38,27 +38,26 @@ public class ClientsManager {
 						DataInputStream dis = new DataInputStream(socketCliente.getInputStream());
 						DataOutputStream dos = new DataOutputStream(socketCliente.getOutputStream());
 						
-						eleccion = dis.read();
-						switch(eleccion) {
-						case 1:
-							String data = dis.readUTF();
-							dos.writeUTF(insertNewClient(connection, data));
-							
-							break;
-						case 2:
-							dos.writeUTF(getAllClients(connection));
-							break;
-						case 3:
-							int userId = dis.read();
-							UpdateClient(dos,dis,connection, userId);
-							break;
-						case 4:
-							int idToDelete = dis.read();
-							dos.writeUTF(DeleteClient(connection, idToDelete));
-							
-							
-						}
-			
+						do {
+							eleccion = dis.read();
+							switch(eleccion) {
+							case 1:
+								String data = dis.readUTF();
+								dos.writeUTF(insertNewClient(connection, data));
+								
+								break;
+							case 2:
+								dos.writeUTF(getAllClients(connection));
+								break;
+							case 3:
+								int userId = dis.read();
+								UpdateClient(dos,dis,connection, userId);
+								break;
+							case 4:
+								int idToDelete = dis.read();
+								dos.writeUTF(DeleteClient(connection, idToDelete));
+							}
+						}while (eleccion != 5);
 						// Cerrar conexiones y streams
 						dis.close();
 						socketCliente.close();
